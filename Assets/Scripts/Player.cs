@@ -19,6 +19,7 @@ public class Player: MonoBehaviour
     [SerializeField] private float flashCooldown;
     [SerializeField] private float flashCheckRadius;
     [SerializeField] private float flashFixHeight;
+    public bool flashInput = false;
     private RaycastHit2D hitInfo;
     private float flashCooldownTimer = 0f;
     public Vector3 targetPos;
@@ -43,6 +44,8 @@ public class Player: MonoBehaviour
     public PlayerFlashState flashState { get; private set; }
     public PlayerJumpState jumpState { get; private set; }
     public PlayerFallState fallState { get; private set; }
+
+    public PlayerAttackState attackState { get; private set; }
     #endregion 
 
     private void Awake ()
@@ -58,6 +61,7 @@ public class Player: MonoBehaviour
         flashState = new PlayerFlashState( this,stateMachine,"Flash" );
         jumpState = new PlayerJumpState( this,stateMachine,"Jump" );
         fallState = new PlayerFallState( this,stateMachine,"Jump" );
+        attackState = new PlayerAttackState( this,stateMachine,"Attack" );
     }
 
     private void Start ()
@@ -71,6 +75,8 @@ public class Player: MonoBehaviour
         stateMachine.currentState.Update();
         Debug.Log(stateMachine.currentState);
         FlashCheck();
+        if( !flashInput )
+            AttackCheck();
     }
 
 
@@ -80,6 +86,12 @@ public class Player: MonoBehaviour
         FlipController( _xVelocity );
     }
 
+    private void AttackCheck()
+    {
+        if( Input.GetKeyDown( KeyCode.Mouse0 ) && stateMachine.currentState != flashState )
+            stateMachine.ChangeState( attackState );
+    }
+
     public bool IsGroundDetected () => Physics2D.Raycast( groundCheck.position,Vector2.down,groundCheckDistance,whatIsGround );
 
     private void FlashCheck()
@@ -87,6 +99,7 @@ public class Player: MonoBehaviour
         flashCooldownTimer += Time.deltaTime;
         if( Input.GetKeyDown( KeyCode.LeftShift ) && flashCooldownTimer >= 0)
         {
+            flashInput = true;
             CheckTargetPos();
 
             stateMachine.ChangeState( flashState );
@@ -103,6 +116,7 @@ public class Player: MonoBehaviour
         {
             float resDistance = flashDistance - hitInfo.distance;
             float wallDepth = hitInfo.collider.bounds.size.x;
+            Debug.Log( wallDepth );
             if( resDistance >= wallDepth / 2 )
                 targetPos = new Vector3( hitInfo.point.x + ( wallDepth + flashCheckRadius ) * facingDir,hitInfo.point.y );
             else
