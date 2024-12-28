@@ -31,5 +31,8 @@ public class PlayerAttackState: PlayerState
     public override void Update ()
     {
         base.Update();
+
+        if( triggerCalled )
+            player.stateMachine.ChangeState( player.idleState );
     }
 }

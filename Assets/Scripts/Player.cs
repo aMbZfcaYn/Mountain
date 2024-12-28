@@ -86,6 +86,8 @@ public class Player: MonoBehaviour
         FlipController( _xVelocity );
     }
 
+    public void AnimationTrigger () => stateMachine.currentState.AnimationFinishTrigger();
+
     private void AttackCheck()
     {
         if( Input.GetKeyDown( KeyCode.Mouse0 ) && stateMachine.currentState != flashState )
